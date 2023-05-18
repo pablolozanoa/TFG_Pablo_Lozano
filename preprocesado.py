@@ -3,7 +3,7 @@ import pandas                   as pd
 import numpy                    as np
 import matplotlib.pyplot        as plt
 import seaborn                  as sns
-from funciones_preprocesado     import ficheros
+from os.path                    import isfile, join
 from sklearn.preprocessing      import LabelEncoder
 from collections                import Counter
 from scipy.stats                import zscore
@@ -20,6 +20,11 @@ from imblearn.under_sampling    import NearMiss, TomekLinks, EditedNearestNeighb
 
 print("Juntando todos los Datasets ...")
 
+def ficheros(ruta):
+    contenido = os.listdir(ruta)
+    archivos = [nombre for nombre in contenido if isfile(join(ruta, nombre))]
+    return archivos
+
 files = ficheros('./original_dataset/before_reboot')
 files.remove('No_Category_before_reboot_Cat.csv')
 files.remove('Zero_Day_before_reboot_Cat.csv')
@@ -27,7 +32,6 @@ files_2 = ficheros('./original_dataset/after_reboot')
 files_2.remove('No_Category_after_reboot_Cat.csv')
 files_2.remove('Zero_Day_after_reboot_Cat.csv')
 print(files)
-
 
 df = pd.read_csv("./original_dataset/before_reboot/"+ files[0], na_values=['NA', '?', 'NaN'])
 df_2 = pd.read_csv("./original_dataset/after_reboot/"+ files_2[0], na_values=['NA', '?', 'NaN'])
@@ -38,8 +42,7 @@ for x in range(1, len(files)):
     df_next_2 = pd.read_csv("./original_dataset/after_reboot/"+ files_2[x], na_values=['NA', '?', 'NaN'])
     df = pd.concat([df, df_next, df_next_2], ignore_index= True)
 
-size = np.shape(df)
-print(size)
+print(np.shape(df))
 
 print("Los datasets han sido unidos en uno correctamente", "\n")
 
@@ -80,7 +83,8 @@ for column in numeric_features.columns:
 for constant_feature in constant_features:
     df.drop(constant_feature, axis= 1, inplace=True)
     print("La caracteristica {} ha sido eliminada por ser constante".format(constant_feature))
-print("")
+
+print('Características constantes eliminadas\n')
 
 #============================================================
 # Análisis de los valores No numéricos
@@ -130,22 +134,22 @@ else:
     indices = inf_values.index
     df = df.drop(indices)
     print("Se han eliminado las filas que contenían algún Infinite-Value", "\n")
-print(df)
+
 #============================================================
 # Análisis de los valores numéricos
 #============================================================
 
 print("Analizando los valores Numericos ...")
 
-scaler = MinMaxScaler()
+#scaler = MinMaxScaler()
 
 for feature in num:
-    #df[feature] = zscore(df[feature])
-    df[feature] = scaler.fit_transform(df[[feature]])
-#df['Hash'] = zscore(df['Hash'])
-df["Hash"] = scaler.fit_transform(df[["Hash"]])
+    df[feature] = zscore(df[feature])
+    #df[feature] = scaler.fit_transform(df[[feature]])
+df['Hash'] = zscore(df['Hash'])
+#df["Hash"] = scaler.fit_transform(df[["Hash"]])
 
-print("Valores transformados usando MinMaxScaler")
+print("Valores transformados usando Zscore")
 
 # # Mezclamos las filas con la misma semilla para obtener siempre la misma mezcla
 # np.random.seed(33)
@@ -256,8 +260,8 @@ print("Eliminando outliers ...")
 
 counter = Counter(y)
 print(counter)
-print([(i, counter[i] / sum(counter.values())  * 100.0) for i in counter], "\n")
-print("Length before outliers dropped: {}".format(len(X)))
+print([(i, counter[i] / sum(counter.values())  * 100.0) for i in counter])
+print("Length before outliers dropped: {}".format(len(X)), "\n")
 
 # Remove all rows where the specified column is +/- sd standard deviations
 
@@ -281,8 +285,8 @@ y = df['Category']
 
 counter = Counter(y)
 print(counter)
-print([(i, counter[i] / sum(counter.values())  * 100.0) for i in counter], "\n")
-print("Length after outliers dropped: {}".format(len(X)))
+print([(i, counter[i] / sum(counter.values())  * 100.0) for i in counter])
+print("Length after outliers dropped: {}".format(len(X)), "\n")
 
 print('Outliers eliminados\n')
 
@@ -291,10 +295,6 @@ print('Outliers eliminados\n')
 #============================================================
 
 print('Balanceando el dataset ...')
-
-counter = Counter(y)
-print(counter)
-print([(i, counter[i] / sum(counter.values())  * 100.0) for i in counter])
 
 df = pd.concat([X,y], axis= 1)
 df_sup = df
@@ -310,9 +310,8 @@ for i in range(12):
 X_sup = df_sup.drop('Category',axis= 1)
 y_sup = df_sup['Category']
 tl = TomekLinks()
-enn = EditedNearestNeighbours()
-nm = NearMiss()
 X_sup, y_sup = tl.fit_resample(X_sup,y_sup)
+enn = EditedNearestNeighbours()
 X_sup, y_sup = enn.fit_resample(X_sup,y_sup)
 
 X_inf = df_inf.drop('Category',axis= 1)
@@ -337,14 +336,8 @@ print('Dataset Balanceado\n')
 print('Comprobando filas repetidas ...')
 
 df = pd.concat([X,y], axis= 1)
-size = np.shape(df)
-print(size)
 
-print(df)
 df = df.drop_duplicates(df.columns[~df.columns.isin(['Hash'])], keep= 'first')
-
-size = np.shape(df)
-print(size)
 
 X = df.drop('Category',axis= 1)
 y = df['Category']
@@ -355,11 +348,15 @@ print('Filas repetidas comprobadas\n')
 # Dividimos en parte de Train y Test y guardamos
 #============================================================
 
+print('División en parte de Train y Test ...')
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=41) #Elegir test entre 0,2 y 0,3 (máximo)
 counter_y_train = Counter(y_train)
+print('Train:')
 print(counter_y_train)
 print([(i, counter_y_train[i] / sum(counter_y_train.values())  * 100.0) for i in counter_y_train], "\n")
 counter_y_test = Counter(y_test)
+print('Test:')
 print(counter_y_test)
 print([(i, counter_y_test[i] / sum(counter_y_test.values())  * 100.0) for i in counter_y_test], "\n")
 
@@ -367,6 +364,5 @@ X_train.to_csv('./data/x_train.csv', index = False)
 X_test.to_csv('./data/x_test.csv', index = False)
 y_train.to_csv('./data/y_train.csv', index = False)
 y_test.to_csv('./data/y_test.csv', index = False)
-
 
 print('Data-set guardado correctamente', "\n")
