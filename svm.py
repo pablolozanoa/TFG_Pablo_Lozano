@@ -97,10 +97,12 @@ params_gbm ={
 print('Entrenando el modelo ...')
 svm = SVC(kernel='rbf', 
             gamma='scale', 
-            C=1000,
-            max_iter=650000,
+            C=100,
+            max_iter=150000,
             #verbose= 2, 
-            probability=True)
+            probability=True,
+            random_state=1
+            )
 print(svm.get_params())
 
 svm.fit(X_train, y_train)
@@ -146,7 +148,7 @@ print("F1 Score SVM:\t{}\n".format(f1_score(y_test, pred, average='weighted')))
 # Dataset con todas las predicciones y estadisticas
 #============================================================
 
-print("Crando el dataset de probabilidades y prediccion ...")
+print("Creando el dataset de probabilidades y prediccion ...")
 pred_prob = svm.predict_proba(X_test)
 df_pred = predictions(pred_prob, y_test)
 df_pred.to_csv('./analysis/SVM.csv')
