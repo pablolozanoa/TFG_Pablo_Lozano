@@ -97,7 +97,7 @@ params_gbm ={
 
 print('Entrenando el modelo ...')
 knn = KNeighborsClassifier(
-    n_neighbors= 2,
+    n_neighbors= 7,
     #weights= 'distance',
     metric= 'manhattan',
 )
@@ -145,7 +145,7 @@ print("F1 Score KNN:\t{}\n".format(f1_score(y_test, pred, average='weighted')))
 # Dataset con todas las predicciones y estadisticas
 #============================================================
 
-print("Crando el dataset de probabilidades y prediccion ...")
+print("Creando el dataset de probabilidades y prediccion ...")
 pred_prob = knn.predict_proba(X_test)
 df_pred = predictions(pred_prob, y_test)
 df_pred.to_csv('./analysis/KNN.csv')
