@@ -4,11 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
+from sklearn.discriminant_analysis  import StandardScaler
 from sklearn.ensemble               import RandomForestClassifier
 from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, roc_curve, auc, f1_score, recall_score, precision_score
 from sklearn.model_selection        import train_test_split, GridSearchCV, cross_val_score, KFold
 from sklearn.preprocessing          import label_binarize
-from sklearn.feature_selection      import SelectKBest, mutual_info_classif
+from sklearn.feature_selection      import SelectKBest, mutual_info_classif, chi2
 from scipy.stats                    import zscore
 from bayes_opt                      import BayesianOptimization
 from time                           import time
@@ -48,7 +49,7 @@ param_grid = {'criterion': ('gini', 'entropy'),
                     'min_samples_leaf' : [1, 2],
                     'bootstrap' : [True, False],
                     'max_features' : ['sqrt', 'log2', None],
-                    } 
+                    }
 
 #------------------------
 # Grid Search
@@ -97,7 +98,7 @@ rf = RandomForestClassifier(#criterion='entropy',
                             #bootstrap= False,
                             #max_features= 'sqrt',
                             #max_depth= 50,
-                            n_estimators= 20,
+                            n_estimators= 4,
                             #verbose= 2,
                             random_state= 1
                             )
@@ -145,7 +146,7 @@ print("F1 Score Random Forest:\t{}\n".format(f1_score(y_test, pred, average='wei
 # Dataset con todas las predicciones y estadisticas
 #============================================================
 
-print("Crando el dataset de probabilidades y prediccion ...")
+print("Creando el dataset de probabilidades y prediccion ...")
 pred_prob = rf.predict_proba(X_test)
 df_pred = predictions(pred_prob, y_test)
 df_pred.to_csv('./analysis/RF.csv')
