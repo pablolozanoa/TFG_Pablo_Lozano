@@ -141,13 +141,13 @@ else:
 
 print("Analizando los valores Numericos ...")
 
-#scaler = MinMaxScaler()
+scaler = MinMaxScaler()
 
 for feature in num:
-    df[feature] = zscore(df[feature])
-    #df[feature] = scaler.fit_transform(df[[feature]])
-df['Hash'] = zscore(df['Hash'])
-#df["Hash"] = scaler.fit_transform(df[["Hash"]])
+    #df[feature] = zscore(df[feature])
+    df[feature] = scaler.fit_transform(df[[feature]])
+#df['Hash'] = zscore(df['Hash'])
+df["Hash"] = scaler.fit_transform(df[["Hash"]])
 
 print("Valores transformados usando Zscore")
 
@@ -313,6 +313,8 @@ tl = TomekLinks()
 X_sup, y_sup = tl.fit_resample(X_sup,y_sup)
 enn = EditedNearestNeighbours()
 X_sup, y_sup = enn.fit_resample(X_sup,y_sup)
+# nm = NearMiss()
+# X_sup, y_sup = nm.fit_resample(X_sup,y_sup)
 
 X_inf = df_inf.drop('Category',axis= 1)
 y_inf = df_inf['Category']
@@ -349,6 +351,7 @@ print('Filas repetidas comprobadas\n')
 #============================================================
 
 print('División en parte de Train y Test ...')
+print(np.shape(X))
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=41) #Elegir test entre 0,2 y 0,3 (máximo)
 counter_y_train = Counter(y_train)
