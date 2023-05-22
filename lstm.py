@@ -40,7 +40,6 @@ y_test_col = y_test
 y_train_col = y_train
 y_train = pd.get_dummies(y_train,prefix="cat")
 
-
 #============================================================
 # Creamos, entrenamos y testeamos el modelo
 #============================================================
@@ -48,27 +47,15 @@ y_train = pd.get_dummies(y_train,prefix="cat")
 print('Entrenando el modelo ...')
 
 lstm = Sequential()
-lstm.add(LSTM(128, input_shape=(None, X_train.shape[2]), dropout=0.0, recurrent_dropout=0.0, return_sequences=True))
-lstm.add(LSTM(128, dropout=0.0, recurrent_dropout=0.0, return_sequences=True))
-lstm.add(LSTM(128, dropout=0.0, recurrent_dropout=0.0, return_sequences=True))
-lstm.add(LSTM(128, dropout=0.0, recurrent_dropout=0.0))
+lstm.add(LSTM(128, activation='relu', input_shape=(None, X_train.shape[2]), return_sequences=True))
+lstm.add(LSTM(128, activation='relu', return_sequences=True))
+lstm.add(LSTM(128, activation='relu', return_sequences=True))
+lstm.add(LSTM(128, activation='relu'))
 lstm.add(Dense(y_train.shape[1], activation='softmax'))
 lstm.summary()
 lstm.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 monitor = EarlyStopping(monitor='loss', min_delta=1e-3, patience=5, verbose=1, mode='auto', restore_best_weights=True)
 lstm.fit(X_train, y_train, epochs=100, verbose=1,callbacks=[monitor], batch_size = 64)
-
-
-# lstm.add(LSTM(128, input_shape=(None, 66), activation='relu', return_sequences=True))
-# lstm.add(LSTM(128, activation='relu', return_sequences=True))
-# lstm.add(LSTM(64, activation='relu'))
-# lstm.add(Dense(64, activation='relu'))
-# lstm.add(Dense(64, activation='relu'))
-# lstm.add(Dense(y_train.shape[1], activation='softmax'))
-# opt = tf.keras.optimizers.legacy.Adam(learning_rate=1e-3, decay=1e-5)
-# lstm.summary()
-# lstm.compile(loss='categorical_crossentropy',optimizer=opt, metrics=['accuracy'])
-# lstm.fit(x=X_train,y=y_train,batch_size=64,epochs=100,verbose=1,validation_split=0.1,shuffle=True)
 
 print('Modelo entrenado\n')
 
@@ -90,8 +77,8 @@ print('Accuracy for LSTM - Test:\t{}\n'.format(accuracy_score(testing, y_test_co
 print("Creando la matriz de confusion ...")
 fig = plt.figure(figsize=(11,11))
 c_matrix = confusion_matrix(y_test_col, testing)
-sns.heatmap(c_matrix, cmap="YlGnBu", annot=True)
-plt.title("Confusion Matrix LSTM")
+sns.heatmap(c_matrix, cmap="RdPu", annot=True)
+plt.title("Matriz de Confusión del LSTM")
 fig.savefig("./img/LSTM/CM_LSTM.png", dpi=300)
 print("Matriz de confusion para LSTM guardada.\n")
 
@@ -118,7 +105,7 @@ print("F1 Score LSTM:\t{}\n".format(f1_score(y_test_col, testing, average='weigh
 # Dataset con todas las predicciones y estadisticas
 #============================================================
 
-print("Crando el dataset de probabilidades y prediccion ...")
+print("Creando el dataset de probabilidades y prediccion ...")
 df_pred = predictions(pred_test, y_test_col)
 df_pred.to_csv('./analysis/LSTM.csv')
 print('Dataset creado\n')
@@ -137,7 +124,7 @@ print('Curvas ROC pintadas y guardadas\n')
 #============================================================
 
 print('Guardando el modelo ...')
-joblib.dump(lstm, './saved_model/lstm_model.pkl')
+lstm.save('./saved_model/lstm_model.h5')
 print('Modelo guardado correctamente.\n')
 
 t_f= time()

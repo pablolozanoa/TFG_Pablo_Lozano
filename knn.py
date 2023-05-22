@@ -97,7 +97,7 @@ params_gbm ={
 
 print('Entrenando el modelo ...')
 knn = KNeighborsClassifier(
-    n_neighbors= 7,
+    n_neighbors= 3,
     #weights= 'distance',
     metric= 'manhattan',
 )
@@ -116,8 +116,8 @@ print('Accuracy for KNN Classifier - Test:\t{}\n'.format(accuracy_score(pred, y_
 print("Creando la matriz de confusion ...")
 fig = plt.figure(figsize=(11,11))
 c_matrix = confusion_matrix(y_test, pred)
-sns.heatmap(c_matrix, cmap="YlGnBu", annot=True)
-plt.title("Confusion Matrix KNN Classifier")
+sns.heatmap(c_matrix, cmap="RdPu", annot=True)
+plt.title("Matriz de Confusión del KNN")
 fig.savefig("./img/KNN/CM_KNN.png", dpi=300)
 print("Matriz de confusion para KNN guardada.\n")
 #print(c_matrix)

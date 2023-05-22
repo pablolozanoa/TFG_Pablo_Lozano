@@ -97,7 +97,7 @@ params_gbm ={
 print('Entrenando el modelo ...')
 svm = SVC(kernel='rbf', 
             gamma='scale', 
-            C=100,
+            C=60,
             max_iter=150000,
             #verbose= 2, 
             probability=True,
@@ -119,8 +119,8 @@ print('Accuracy for SVM Classifier - Test:\t{}\n'.format(accuracy_score(pred, y_
 print("Creando la matriz de confusion ...")
 fig = plt.figure(figsize=(11,11))
 c_matrix = confusion_matrix(y_test, pred)
-sns.heatmap(c_matrix, cmap="YlGnBu", annot=True)
-plt.title("Confusion Matrix SVM Classifier")
+sns.heatmap(c_matrix, cmap="RdPu", annot=True)
+plt.title("Matriz de Confusión del SVM")
 fig.savefig("./img/SVM/CM_SVM.png", dpi=300)
 print("Matriz de confusion para SVM guardada.\n")
 #print(c_matrix)

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import tensorflow as tf
 from keras.models                   import Sequential
-from keras.layers                   import Dense, MLP, Dropout
+from keras.layers                   import Dense, Dropout
 from keras.wrappers.scikit_learn    import KerasClassifier
 from keras.callbacks                import EarlyStopping
 from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, roc_curve, auc, f1_score
@@ -45,18 +45,18 @@ y_train = pd.get_dummies(y_train,prefix="cat")
 print('Entrenando el modelo ...')
 
 shape = X_train.shape[1]
-print(shape)
 mlp = Sequential()
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(128, activation='softsign', input_dim= shape))
-mlp.add(Dense(64, activation='softsign', input_dim= shape))
+mlp.add(Dense(120, activation='softsign', input_dim= shape))
+mlp.add(Dense(120, activation='relu', input_dim= shape))
+mlp.add(Dense(120, activation='relu', input_dim= shape))
+# mlp.add(Dense(128, activation='softsign', input_dim= shape))
+# mlp.add(Dense(64, activation='softsign', input_dim= shape))
+# mlp.add(Dense(64, activation='softsign', input_dim= shape))
+mlp.add(Dense(64, activation='relu', input_dim= shape))
+mlp.add(Dense(64, activation='relu', input_dim= shape))
+mlp.add(Dense(64, activation='relu', input_dim= shape))
 mlp.add(Dense(64, activation='softsign'))
+mlp.summary()
 mlp.add(Dense(y_train.shape[1], activation='softmax'))
 mlp.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 monitor = EarlyStopping(monitor='loss', min_delta=1e-3, patience=5, verbose=1, mode='auto', restore_best_weights=True)
@@ -82,8 +82,8 @@ print('Accuracy for MLP - Test:\t{}\n'.format(accuracy_score(testing, y_test_col
 print("Creando la matriz de confusion ...")
 fig = plt.figure(figsize=(11,11))
 c_matrix = confusion_matrix(y_test_col, testing)
-sns.heatmap(c_matrix, cmap="YlGnBu", annot=True)
-plt.title("Confusion Matrix MLP")
+sns.heatmap(c_matrix, cmap="RdPu", annot=True)
+plt.title("Matriz de confusión del MLP")
 fig.savefig("./img/MLP/CM_MLP.png", dpi=300)
 print("Matriz de confusion para MLP guardada.\n")
 
@@ -129,7 +129,7 @@ print('Curvas ROC pintadas y guardadas\n')
 #============================================================
 
 print('Guardando el modelo ...')
-joblib.dump(mlp, './saved_model/mlp_model.pkl')
+mlp.save('./saved_model/mlp_model.h5')
 print('Modelo guardado correctamente.\n')
 
 t_f= time()
