@@ -119,7 +119,7 @@ print('Accuracy for SVM Classifier - Test:\t{}\n'.format(accuracy_score(pred, y_
 print("Creando la matriz de confusion ...")
 fig = plt.figure(figsize=(11,11))
 c_matrix = confusion_matrix(y_test, pred)
-sns.heatmap(c_matrix, cmap="RdPu", annot=True)
+sns.heatmap(c_matrix, cmap="YlOrRd", annot=True)
 plt.title("Matriz de Confusión del SVM")
 fig.savefig("./img/SVM/CM_SVM.png", dpi=300)
 print("Matriz de confusion para SVM guardada.\n")

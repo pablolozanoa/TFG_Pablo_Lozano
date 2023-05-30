@@ -113,12 +113,12 @@ print('Accuracy for Random Forest - Train:\t{}\n'.format(accuracy_score(pred_tra
 
 print('Resultados del test ...')
 pred = rf.predict(X_test)
-print('Accuracy for Random Forest Classifier - Test:\t{}\n'.format(accuracy_score(pred, y_test)))
+print('Accuracy for Random Forest Classifier - Test:\t{}\n'.format(accuracy_score(y_test, pred)))
 
 print("Creando la matriz de confusion ...")
 fig = plt.figure(figsize=(11,11))
 c_matrix = confusion_matrix(y_test, pred)
-sns.heatmap(c_matrix, cmap="PuBu", annot=True)
+sns.heatmap(c_matrix, cmap="YlOrRd", annot=True)
 plt.title("Matriz de Confusión del Random Forest")
 fig.savefig("./img/RF/CM_RF.png", dpi=300)
 print("Matriz de confusion para Random Forest guardada.\n")
