@@ -5,14 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 from sklearn.neighbors              import KNeighborsClassifier
-from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, roc_curve, auc, f1_score
-from sklearn.model_selection        import train_test_split, GridSearchCV, cross_val_score, KFold, StratifiedKFold
-from sklearn.preprocessing          import label_binarize, StandardScaler
-from sklearn.feature_selection      import SelectKBest, mutual_info_classif
-from scipy.stats                    import zscore
+from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection        import cross_val_score
 from bayes_opt                      import BayesianOptimization
 from time                           import time
-from itertools                      import cycle
 from funciones_modelos              import F_and_T_Rates, predictions, plt_roc, CV_GridSearch, CV_RandomizedSearch
 
 t_i = time()
@@ -29,14 +25,6 @@ y_train = pd.read_csv("./data/y_train.csv")
 
 y_train = y_train['Category']
 y_test = y_test['Category']
-
-# # K-Best:
-# best=SelectKBest(mutual_info_classif,k=6)
-# X_best = best.fit_transform(X_train, y_train['attack_cat'])
-# selected = best.get_support(indices=True)
-# print('Selected features are: ', X_train.columns[selected])
-# X_train = X_train[X_train.columns[selected]]
-# X_test = X_test[X_test.columns[selected]]
 
 #============================================================
 # Optimizamos los hiperparámetros

@@ -5,14 +5,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 from sklearn.svm                    import SVC
-from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, roc_curve, auc, f1_score
-from sklearn.model_selection        import train_test_split, GridSearchCV, cross_val_score, KFold, StratifiedKFold
-from sklearn.preprocessing          import label_binarize, StandardScaler
-from sklearn.feature_selection      import SelectKBest, mutual_info_classif
-from scipy.stats                    import zscore
+from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection        import cross_val_score
+from sklearn.preprocessing          import StandardScaler
 from bayes_opt                      import BayesianOptimization
 from time                           import time
-from itertools                      import cycle
 from funciones_modelos              import F_and_T_Rates, predictions, plt_roc, CV_GridSearch, CV_RandomizedSearch
 
 t_i = time()

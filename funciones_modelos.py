@@ -2,15 +2,9 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.svm                    import SVC
-from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, roc_curve, auc, f1_score
-from sklearn.model_selection        import train_test_split, GridSearchCV, RandomizedSearchCV, cross_val_score, KFold, StratifiedKFold
-from sklearn.preprocessing          import label_binarize, StandardScaler
-from sklearn.feature_selection      import SelectKBest, mutual_info_classif
-from scipy.stats                    import zscore
-from sklearn.ensemble               import RandomForestClassifier
-from time                           import time
+from sklearn.metrics                import roc_curve, auc
+from sklearn.model_selection        import GridSearchCV, RandomizedSearchCV
+from sklearn.preprocessing          import label_binarize
 from itertools                      import cycle
 
 

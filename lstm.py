@@ -1,5 +1,4 @@
 import os
-import joblib
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,15 +6,9 @@ import seaborn as sns
 import tensorflow as tf
 from keras.models                   import Sequential
 from keras.layers                   import Dense, LSTM, Dropout
-from keras.wrappers.scikit_learn    import KerasClassifier
 from keras.callbacks                import EarlyStopping
-from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, roc_curve, auc, f1_score
-from sklearn.model_selection        import train_test_split, GridSearchCV, cross_val_score, KFold
-from sklearn.preprocessing          import label_binarize
-from sklearn.feature_selection      import SelectKBest, mutual_info_classif
-from scipy.stats                    import zscore
+from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 from time                           import time
-from itertools                      import cycle
 from funciones_modelos              import F_and_T_Rates, predictions, plt_roc
 
 t_i = time()
