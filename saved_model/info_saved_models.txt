@@ -1,4 +1,6 @@
 En esta carpeta se guardarán los modelos una vez entrenados.
+No se encuentran guardados en este repositorio debido a su gran tamaño.
+
 AL finalizar el entrenamiento de todos los modelos deberían aparecer los siguientes archivos en esta carpeta:
     - knn_model.pkl
     - lstm_model.h5
