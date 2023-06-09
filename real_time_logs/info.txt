@@ -1,0 +1,1 @@
+En esta carpeta se guardarán los logs de los ataques clasificados por el sistema en tiempo real

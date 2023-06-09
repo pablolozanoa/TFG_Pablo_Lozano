@@ -1,27 +1,21 @@
 import sys
+import joblib
+import datetime
 import pandas as pd
 import numpy as np
-import joblib
-from tabulate import tabulate
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from kafka                          import KafkaConsumer
 from sklearn.discriminant_analysis  import StandardScaler
-import time
-from sklearn.metrics            import accuracy_score, f1_score
-import matplotlib.pyplot        as plt
-import seaborn                  as sns
-from sklearn.metrics                import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
-from funciones_modelos              import F_and_T_Rates, predictions, plt_roc
+from tabulate                       import tabulate
+
 
 
 bootstrap_servers = ['localhost:9092']
-topicName = 'attacks'
+topicName = 'Attacks'
 print('Creando el consumidor ...')
 consumer = KafkaConsumer (topicName, group_id = 'group1',bootstrap_servers = bootstrap_servers, auto_offset_reset = 'earliest')
-print('Consumidor creado')
-
-y = pd.read_csv("./data/y_test.csv")
-y = y['Category']
+print('Consumidor creado\n')
 
 print('Cargando los modelos ...')
 rf = joblib.load('./saved_model/rf_model.pkl')
@@ -31,9 +25,8 @@ lstm = tf.keras.models.load_model('./saved_model/lstm_model.h5')
 print('Modelos cargados')
 
 recibido = []
-real = []
 
-def predict_GC(df_muestra, id):
+def predict_GC(df_muestra):
 
     rf_pred = rf.predict_proba(df_muestra)
     rf_res_tot = rf.predict(df_muestra)
@@ -87,46 +80,54 @@ def predict_GC(df_muestra, id):
         type_argmax.append(np.argmax(pred_total[i]))
     
     recibido.append(type_argmax[0])
-    real.append(y[id])
-    c_matrix[type_argmax[0], y[id]] += 1
+
+    aux.insert(0,categorias[type_argmax[0]])
+    fecha_hora_actual = datetime.datetime.now()
+    fecha_hora_actual_str = fecha_hora_actual.strftime("%Y-%m-%d %H:%M:%S")
+    aux.insert(0,fecha_hora_actual_str)
+
+    nuevo_indice = logs.shape[0] +1
+    logs.loc[nuevo_indice] = aux
+
     return type_argmax[0]
 
+def guardar_logs():
+    fecha_hora_actual = datetime.datetime.now()
+    fecha_hora_actual_str = fecha_hora_actual.strftime("%Y-%m-%d_%H-%M-%S")
+    logs.to_csv('./real_time_logs/logs_'+ fecha_hora_actual_str +'.csv')
+
+    print('Se han almacenado los logs en el archivo logs_'+ fecha_hora_actual_str +'\n')
+
 def guardar_resultados():
-    print("Creando la matriz de confusion ...")
-    fig = plt.figure(figsize=(11,11))
-    c_matrix = confusion_matrix(real, recibido)
-    sns.heatmap(c_matrix, cmap="YlOrRd", annot=True)
-    plt.title("Matriz de confusión")
-    fig.savefig("./img/RT/CM_RT.png", dpi=300)
-    print("Matriz de confusion guardada.\n")
+    etiquetas = [categorias[i] for i in range(12)]
+    plt.xticks(x_values, etiquetas, rotation=45, ha = 'right')
+    plt.xlabel('Nº Muestras', fontsize=8)
+    plt.ylabel('Categorías', fontsize=8)
+    plt.title('Histograma de los ataques recibidos', fontsize=15, pad =10, fontname='Times New Roman')
+    plt.yticks(np.arange(0, max(count) + 2, 1))
+    plt.tick_params(axis='both', which='major', labelsize=6)
+    plt.tight_layout()
+    plt.savefig("./img/RT/Real_Time.png", dpi=300)
 
-    print('Calculando TPR, TNR, FPR y FNR ...')
-    F_and_T_Rates(c_matrix)
-    print('')
-
-    print('Clasification Report:')
-    print(classification_report(real, recibido))
-
-    print("Precision:\t{}".format(precision_score(real, recibido, average='weighted')))
-    print("Recall:\t{}".format(recall_score(real, recibido, average='weighted')))
-    print("F1 Score:\t{}\n".format(f1_score(real, recibido, average='weighted')))
+    print('Se ha guardado el Histograma de los ataques recibidos\n')
 
 c_matrix = np.zeros((12, 12))
 axis = 0
 categorias = {0 :  "Adware", 1 :  "Backdoor", 2 :  "FileInfector", 3 :  "PUA", 4 :  "Ransomware", 5 :  "Riskware", 6 :  "Scareware", 7 :  "Trojan", 8 :  "Trojan_Banker", 9 :  "Trojan_Dropper", 10: "Trojan_SMS", 11: "Trojan_Spy"}
+logs = pd.DataFrame(columns=['Fecha', 'Predicción', 'Memory_PssTotal', 'Memory_PssClean', 'Memory_SharedDirty', 'Memory_PrivateDirty', 'Memory_SharedClean', 'Memory_HeapSize', 'Memory_HeapFree', 'Memory_Views', 'Memory_ViewRootImpl', 'Memory_AppContexts', 'Memory_Activities', 'Memory_Assets', 'Memory_LocalBinders', 'Memory_ProxyBinders', 'Memory_ParcelMemory', 'Memory_ParcelCount', 'Memory_DeathRecipients', 'Memory_WebViews', 'API_Command_java.lang.Runtime_exec', 'API_WebView_android.webkit.WebView_loadUrl', 'API_WebView_android.webkit.WebView_addJavascriptInterface', 'API_FileIO_libcore.io.IoBridge_open', 'API_FileIO_android.content.ContextWrapper_openFileInput', 'API_FileIO_android.content.ContextWrapper_openFileOutput', 'API_FileIO_android.content.ContextWrapper_deleteFile', 'API_Database_android.database.sqlite.SQLiteDatabase_execSQL', 'API_Database_android.database.sqlite.SQLiteDatabase_getPath', 'API_Database_android.database.sqlite.SQLiteDatabase_insert', 'API_Database_android.database.sqlite.SQLiteDatabase_query', 'API_Database_android.database.sqlite.SQLiteDatabase_rawQuery', 'API_Database_android.database.sqlite.SQLiteDatabase_update', 'API_IPC_android.content.ContextWrapper_sendBroadcast', 'API_IPC_android.content.ContextWrapper_startActivity', 'API_IPC_android.content.ContextWrapper_startService', 'API_IPC_android.content.ContextWrapper_stopService', 'API_IPC_android.content.ContextWrapper_registerReceiver', 'API_Binder_android.app.ActivityThread_handleReceiver', 'API_Binder_android.app.Activity_startActivity', 'API_Crypto_javax.crypto.spec.SecretKeySpec_$init', 'API_Crypto-Hash_java.security.MessageDigest_digest', 'API_DeviceInfo_android.telephony.TelephonyManager_getDeviceId', 'API_DeviceInfo_android.telephony.TelephonyManager_getSubscriberId', 'API_DeviceInfo_android.telephony.TelephonyManager_getLine1Number', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkOperator', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkOperatorName', 'API_DeviceInfo_android.net.wifi.WifiInfo_getMacAddress', 'API_DeviceInfo_android.telephony.TelephonyManager_getSimSerialNumber', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkCountryIso', 'API_Network_java.net.URL_openConnection', 'API_Network_com.android.okhttp.internal.huc.HttpURLConnectionImpl_getInputStream', 'API_DexClassLoader_dalvik.system.BaseDexClassLoader_findResource', 'API_DexClassLoader_dalvik.system.BaseDexClassLoader_findLibrary', 'API_DexClassLoader_dalvik.system.DexClassLoader_$init', 'API_Base64_android.util.Base64_decode', 'API_Base64_android.util.Base64_encode', 'API_SystemManager_android.app.ApplicationPackageManager_setComponentEnabledSetting', 'API_SystemManager_android.content.BroadcastReceiver_abortBroadcast', 'API_DeviceData_android.content.ContentResolver_query', 'API_DeviceData_android.content.ContentResolver_registerContentObserver', 'API_DeviceData_android.os.SystemProperties_get', 'API_DeviceData_android.app.ApplicationPackageManager_getInstalledPackages', 'API__sessions', 'Network_TotalReceivedBytes', 'Battery_wakelock', 'Battery_service', 'Hash'])
 
 try:
 
     for message in consumer:
         aux = message.value.decode('utf-8').rstrip('\n').split(',')
         aux = list(map(float, aux))
-        df = pd.DataFrame(columns=['ID','Memory_PssTotal', 'Memory_PssClean', 'Memory_SharedDirty', 'Memory_PrivateDirty', 'Memory_SharedClean', 'Memory_HeapSize', 'Memory_HeapFree', 'Memory_Views', 'Memory_ViewRootImpl', 'Memory_AppContexts', 'Memory_Activities', 'Memory_Assets', 'Memory_LocalBinders', 'Memory_ProxyBinders', 'Memory_ParcelMemory', 'Memory_ParcelCount', 'Memory_DeathRecipients', 'Memory_WebViews', 'API_Command_java.lang.Runtime_exec', 'API_WebView_android.webkit.WebView_loadUrl', 'API_WebView_android.webkit.WebView_addJavascriptInterface', 'API_FileIO_libcore.io.IoBridge_open', 'API_FileIO_android.content.ContextWrapper_openFileInput', 'API_FileIO_android.content.ContextWrapper_openFileOutput', 'API_FileIO_android.content.ContextWrapper_deleteFile', 'API_Database_android.database.sqlite.SQLiteDatabase_execSQL', 'API_Database_android.database.sqlite.SQLiteDatabase_getPath', 'API_Database_android.database.sqlite.SQLiteDatabase_insert', 'API_Database_android.database.sqlite.SQLiteDatabase_query', 'API_Database_android.database.sqlite.SQLiteDatabase_rawQuery', 'API_Database_android.database.sqlite.SQLiteDatabase_update', 'API_IPC_android.content.ContextWrapper_sendBroadcast', 'API_IPC_android.content.ContextWrapper_startActivity', 'API_IPC_android.content.ContextWrapper_startService', 'API_IPC_android.content.ContextWrapper_stopService', 'API_IPC_android.content.ContextWrapper_registerReceiver', 'API_Binder_android.app.ActivityThread_handleReceiver', 'API_Binder_android.app.Activity_startActivity', 'API_Crypto_javax.crypto.spec.SecretKeySpec_$init', 'API_Crypto-Hash_java.security.MessageDigest_digest', 'API_DeviceInfo_android.telephony.TelephonyManager_getDeviceId', 'API_DeviceInfo_android.telephony.TelephonyManager_getSubscriberId', 'API_DeviceInfo_android.telephony.TelephonyManager_getLine1Number', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkOperator', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkOperatorName', 'API_DeviceInfo_android.net.wifi.WifiInfo_getMacAddress', 'API_DeviceInfo_android.telephony.TelephonyManager_getSimSerialNumber', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkCountryIso', 'API_Network_java.net.URL_openConnection', 'API_Network_com.android.okhttp.internal.huc.HttpURLConnectionImpl_getInputStream', 'API_DexClassLoader_dalvik.system.BaseDexClassLoader_findResource', 'API_DexClassLoader_dalvik.system.BaseDexClassLoader_findLibrary', 'API_DexClassLoader_dalvik.system.DexClassLoader_$init', 'API_Base64_android.util.Base64_decode', 'API_Base64_android.util.Base64_encode', 'API_SystemManager_android.app.ApplicationPackageManager_setComponentEnabledSetting', 'API_SystemManager_android.content.BroadcastReceiver_abortBroadcast', 'API_DeviceData_android.content.ContentResolver_query', 'API_DeviceData_android.content.ContentResolver_registerContentObserver', 'API_DeviceData_android.os.SystemProperties_get', 'API_DeviceData_android.app.ApplicationPackageManager_getInstalledPackages', 'API__sessions', 'Network_TotalReceivedBytes', 'Battery_wakelock', 'Battery_service', 'Hash'])
+        print(aux)
+        print(type(aux))
+        df = pd.DataFrame(columns=['Memory_PssTotal', 'Memory_PssClean', 'Memory_SharedDirty', 'Memory_PrivateDirty', 'Memory_SharedClean', 'Memory_HeapSize', 'Memory_HeapFree', 'Memory_Views', 'Memory_ViewRootImpl', 'Memory_AppContexts', 'Memory_Activities', 'Memory_Assets', 'Memory_LocalBinders', 'Memory_ProxyBinders', 'Memory_ParcelMemory', 'Memory_ParcelCount', 'Memory_DeathRecipients', 'Memory_WebViews', 'API_Command_java.lang.Runtime_exec', 'API_WebView_android.webkit.WebView_loadUrl', 'API_WebView_android.webkit.WebView_addJavascriptInterface', 'API_FileIO_libcore.io.IoBridge_open', 'API_FileIO_android.content.ContextWrapper_openFileInput', 'API_FileIO_android.content.ContextWrapper_openFileOutput', 'API_FileIO_android.content.ContextWrapper_deleteFile', 'API_Database_android.database.sqlite.SQLiteDatabase_execSQL', 'API_Database_android.database.sqlite.SQLiteDatabase_getPath', 'API_Database_android.database.sqlite.SQLiteDatabase_insert', 'API_Database_android.database.sqlite.SQLiteDatabase_query', 'API_Database_android.database.sqlite.SQLiteDatabase_rawQuery', 'API_Database_android.database.sqlite.SQLiteDatabase_update', 'API_IPC_android.content.ContextWrapper_sendBroadcast', 'API_IPC_android.content.ContextWrapper_startActivity', 'API_IPC_android.content.ContextWrapper_startService', 'API_IPC_android.content.ContextWrapper_stopService', 'API_IPC_android.content.ContextWrapper_registerReceiver', 'API_Binder_android.app.ActivityThread_handleReceiver', 'API_Binder_android.app.Activity_startActivity', 'API_Crypto_javax.crypto.spec.SecretKeySpec_$init', 'API_Crypto-Hash_java.security.MessageDigest_digest', 'API_DeviceInfo_android.telephony.TelephonyManager_getDeviceId', 'API_DeviceInfo_android.telephony.TelephonyManager_getSubscriberId', 'API_DeviceInfo_android.telephony.TelephonyManager_getLine1Number', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkOperator', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkOperatorName', 'API_DeviceInfo_android.net.wifi.WifiInfo_getMacAddress', 'API_DeviceInfo_android.telephony.TelephonyManager_getSimSerialNumber', 'API_DeviceInfo_android.telephony.TelephonyManager_getNetworkCountryIso', 'API_Network_java.net.URL_openConnection', 'API_Network_com.android.okhttp.internal.huc.HttpURLConnectionImpl_getInputStream', 'API_DexClassLoader_dalvik.system.BaseDexClassLoader_findResource', 'API_DexClassLoader_dalvik.system.BaseDexClassLoader_findLibrary', 'API_DexClassLoader_dalvik.system.DexClassLoader_$init', 'API_Base64_android.util.Base64_decode', 'API_Base64_android.util.Base64_encode', 'API_SystemManager_android.app.ApplicationPackageManager_setComponentEnabledSetting', 'API_SystemManager_android.content.BroadcastReceiver_abortBroadcast', 'API_DeviceData_android.content.ContentResolver_query', 'API_DeviceData_android.content.ContentResolver_registerContentObserver', 'API_DeviceData_android.os.SystemProperties_get', 'API_DeviceData_android.app.ApplicationPackageManager_getInstalledPackages', 'API__sessions', 'Network_TotalReceivedBytes', 'Battery_wakelock', 'Battery_service', 'Hash'])
         df.loc[0] = aux
-        id = df['ID'][0]
-        df_entrenar = df.drop('ID', axis= 1)
 
-        # Llamar una función para detectar la categoría y luego imprimir por pantalla lo q queramos
-        prediccion = predict_GC(df_entrenar, id)
+        # Llamar una función para detectar la categoría y luego imprimir por pantalla
+        prediccion = predict_GC(df)
         print('Se ha detectado un ataque de tipo {}\n'.format(categorias[prediccion]))
         print('El recuento total de ataques detectados es:')
 
@@ -137,17 +138,28 @@ try:
         print(tabulate(resultados, headers=['Categoría del ataque', 'Nº ataques']))
         print('')
 
-        # Ploteamos la matriz de confusión de los datos que estamos recibiendo
+        # Ploteamos el histograma de los datos que estamos recibiendo
         plt.pause(0.002)
         plt.clf()
-        sns.heatmap(c_matrix, cmap="YlOrRd", annot=True)
-        plt.title("Confusion Matrix")
+        count = np.bincount(recibido, minlength=12)
+        x_values = np.arange(0, 12)
+        plt.bar(x_values, count, align='center', alpha=0.5, color='teal')
+        etiquetas = [categorias[i] for i in range(12)]
+        plt.xticks(x_values, etiquetas, rotation=45, ha = 'right')
+        plt.xlabel('Nº Muestras', fontsize=8)
+        plt.ylabel('Categorías', fontsize=8)
+        plt.title('Histograma de los ataques recibidos', fontsize=15, pad =10, fontname='Times New Roman')
+        plt.yticks(np.arange(0, max(count) + 2, 1))
+        plt.tick_params(axis='both', which='major', labelsize=6)
+        plt.tight_layout()
+
         plt.pause(0.002)
         plt.pause(0.001)
 
 except KeyboardInterrupt:
     print('\nSe ha cerrado la conexión\n')
-    print('Se van a mostrar y guardar los resultados ...\n')
+    print('Se va a guardar la información recibida ...\n')
     guardar_resultados()
-    print('\nResultados mostrados y guardados')
+    guardar_logs()
+    print('\nTodo ha sido almacenado correctamente')
     sys.exit()
