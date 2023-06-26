@@ -49,7 +49,7 @@ El primer paso es ejecutar el script encargado de realizar el preprocesado, para
 python preprocesado.py
 ```
 Tras esta ejecución se generan en la carpeta “data” 4 archivos CSV. Dos con los datos de los data-sets tanto la parte de train como la de test y otros dos con sus respectivas características reales.
-
+<br><br><br>
 Después se esto, se ejecutarán los 5 modelos individuales:
 ```
 python random_forest.py
@@ -67,11 +67,14 @@ python mlp.py
 python lstm.py
 ```
 Con estas ejecuciones se guardan en la carpeta “img” la matriz de confusión y la curva ROC de cada uno de los modelos. También en la carpeta “analysis” se guarda un CSV con la información detallada de las predicciones de cada muestra. Finalmente, en la carpeta “saved_model” se guardará el modelo entrenado.
+<br><br><br>
 
 Para ejecutar el clasificador global hay que ejecutar el siguiente comando:
 ```
 python clasificador_global.py
 ```
+<br><br>
+
 Por último, para ejecutar el sistema en tiempo real, hay que desplegar el Broker de Kafka. Para ello habrá que abrir 4 terminales que harán lo siguiente:
 
 - **Terminal 1:** En este se iniciará el servidor de Zookeeper. Para ello hay que ejecutar el siguiente comando desde la ruta \bin\windows de la carpeta donde se instaló Kafka. Este comando sirve solo para SO Windows.
