@@ -22,10 +22,16 @@ Para evitar incompatibilidades de algunas librerías con la versión de Python, 
 ```
 conda create --name nombre_del_entorno python=numero_versión
 ```
+Siendo:
+- _**nombre_del_entorno**_ un nombre a elegir
+- _**numero_verión**_ la versión que se desea tener el en entorno
 Y una vez creado activarlo:
 ```
 conda activate nombre_del_entorno
 ```
+
+Una vez se tiene el entorno, se instalan todas las librerías indicadas en la parte de los requisitos de la siguiente forma:
+
 ## Estructura
 
 ## Ejecución
