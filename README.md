@@ -18,9 +18,13 @@ Para poder ejecutar el código es necesario disponer de lo siguiente:
     - Kafka-python
 
 ## Instalación
-Para evitar incompatibilidades de algunas librerías con la versión de Python, este proyecto fue desarrollado en un entorno de Anaconda3. Para ello hay que crear el entorno y activarlo de la siguiente manera:
+Para evitar incompatibilidades de algunas librerías con la versión de Python, este proyecto fue desarrollado en un entorno de Anaconda3. Para ello hay que crear el entorno de la siguiente manera:
 ```
 conda create --name nombre_del_entorno python=numero_versión
+```
+Y una vez creado activarlo:
+```
+conda activate nombre_del_entorno
 ```
 ## Estructura
 
