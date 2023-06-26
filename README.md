@@ -25,6 +25,7 @@ conda create --name nombre_del_entorno python=numero_versión
 Siendo:
 - _**nombre_del_entorno**_ un nombre a elegir
 - _**numero_verión**_ la versión que se desea tener el en entorno
+
 Y una vez creado activarlo:
 ```
 conda activate nombre_del_entorno
